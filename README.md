@@ -1,4 +1,11 @@
+# Express JS + Sequalize + JWT
+
+Created by RasyidMF (Learning Sequalize, Express JS, Authentication (JWT) with
+Typescript)
+
 # Initialization
+
+## Version : 1.0
 
 ```bash
 npm init -y

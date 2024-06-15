@@ -1,8 +1,9 @@
-import { DataTypes, Sequelize } from "sequelize";
-import Server from "../server";
+import { DataTypes, ModelAttributes } from "sequelize";
+import ModelInterface from "./interfaces";
 
-export default function () {
-	const ProductModel = Server.db.define("products", {
+export default class ProductModel extends ModelInterface {
+	tableName: string = "products";
+	tableAttributes: ModelAttributes = {
 		name: {
 			type: DataTypes.STRING,
 		},
@@ -15,7 +16,5 @@ export default function () {
 		expired: {
 			type: DataTypes.DATEONLY,
 		},
-	});
-
-	return ProductModel;
+	};
 }

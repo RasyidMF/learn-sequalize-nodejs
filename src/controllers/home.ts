@@ -1,26 +1,19 @@
 import { Request, Response } from "express";
-import ProductRouter from "../routes/products";
-import RouterInterface from "../routes/interfaces";
+import { extractRouterInterface, getRouterList } from "../helper/utils";
+import Auth from "../helper/auth";
 
 export default {
-	index(req: Request, res: Response) {
-		const extractApi = function (Router: RouterInterface) {
-			const result: any[] = [];
-
-			Router.router.stack.map((layer) => {
-				result.push({
-					path: layer.route?.path,
-					methods: layer.route?.stack[0].method,
-				});
-			});
-
-			return result;
-		};
+	index(req: Request | any, res: Response) {
+		const data: any = {};
+		getRouterList().forEach((v) => {
+			data[v.name] = extractRouterInterface(v.router);
+		});
 
 		return res.json({
 			api: {
-				product: extractApi(new ProductRouter()),
+				...data,
 			},
+			user: Auth.getUserAuth(req),
 		});
 	},
 };

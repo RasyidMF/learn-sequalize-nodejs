@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import { ProductModel } from "../models";
 import { make } from "simple-body-validator";
+import { Models } from "../models";
 
 export default {
 	async index(req: Request, res: Response) {
 		res.json({
-			data: await ProductModel().findAll(),
+			data: await Models.ProductModel.query().findAll(),
 		});
 	},
 	async store(req: Request, res: Response) {
@@ -25,7 +25,7 @@ export default {
 		}
 
 		const { name, price, qty, expired } = req.body;
-		const createdData = await ProductModel().create({
+		const createdData = await Models.ProductModel.query().create({
 			name,
 			price,
 			qty,
@@ -53,7 +53,7 @@ export default {
 		}
 
 		const { name, price, qty, expired } = req.body;
-		const data = await ProductModel().findOne({
+		const data = await Models.ProductModel.query().findOne({
 			where: {
 				id: req.params.id,
 			},
@@ -78,7 +78,7 @@ export default {
 		}
 	},
 	async delete(req: Request, res: Response) {
-		const data = await ProductModel().findOne({
+		const data = await Models.ProductModel.query().findOne({
 			where: {
 				id: req.params.id,
 			},

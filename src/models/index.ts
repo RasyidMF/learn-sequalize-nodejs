@@ -1,3 +1,10 @@
+import AuthModel from "./auth";
 import ProductModel from "./products";
 
-export { ProductModel };
+/**
+ * Define your models here
+ */
+export const Models = {
+	ProductModel: new ProductModel(),
+	AuthModel: new AuthModel(),
+};

@@ -1,35 +1,45 @@
 require("dotenv").config();
 
 import express from "express";
+import { Express } from "express";
 import { Sequelize } from "sequelize";
-import RouterInterface from "./routes/interfaces";
 
-const bodyParser = require("body-parser");
-const multer = require("multer");
-const upload = multer();
+import RouterInterface from "./routes/interfaces";
+import ModelInterface from "./models/interfaces";
+
+import { Middlewares } from "./middleware";
 
 const PORT = process.env.SERVER_PORT || 3000;
 
 class Server {
-	#expressApp: any;
+	#expressApp: Express;
 	static db: Sequelize;
 
 	constructor() {
 		this.#expressApp = express();
-		this.#expressApp.use(bodyParser.urlencoded({ extended: true }));
-		this.#expressApp.use(bodyParser.json());
-		this.#expressApp.use(upload.array());
-		this.#expressApp.use(express.static("public"));
+
+		// Setup middlewares
+		Middlewares(this.#expressApp);
 	}
 
-	setupRouters(routers: RouterInterface[] = []) {
-		routers.forEach((expressRouter) => {
-			this.#expressApp.use(expressRouter.router);
+	/**
+	 * Setup for routes
+	 */
+	#setupRouters() {
+		const _routers = require("./routes");
+		Object.keys(_routers.Routes).forEach((_key) => {
+			const instance: RouterInterface = _routers.Routes[_key];
+
+			if (instance.basePath != "") {
+				this.#expressApp.use(instance.basePath, instance.router);
+			} else {
+				this.#expressApp.use(instance.router);
+			}
 		});
 	}
 
 	// Setup for database (static function so other file can use "db" easily)
-	async setupDatabase() {
+	async #setupDatabase() {
 		Server.db = new Sequelize(
 			process.env.DB_NAME || "test_db",
 			process.env.DB_USERNAME || "test",
@@ -47,10 +57,15 @@ class Server {
 
 				// Sync the models
 				const _models = require("./models");
-				Object.keys(_models).forEach((_key) => _models[_key]());
+				Object.keys(_models.Models).forEach((_key) => {
+					const instance: ModelInterface = _models.Models[_key];
+					return instance.query();
+				});
 
 				Server.db
-					.sync()
+					.sync({
+						logging: process.env.DB_LOGGING == "true" ? true : false,
+					})
 					.then(() => {
 						console.log("Synchronize successfully!");
 					})
@@ -64,7 +79,13 @@ class Server {
 	}
 
 	// Start the http service
-	start() {
+	async start() {
+		// Setup Databases
+		await this.#setupDatabase();
+
+		// Setup Automaticly Routers
+		this.#setupRouters();
+
 		this.#expressApp.listen(PORT, () => {
 			console.log(`Listening to port ${PORT}`);
 		});
