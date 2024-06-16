@@ -1,4 +1,4 @@
-import { ModelAttributes, DataTypes } from "sequelize";
+import { ModelAttributes, DataTypes, Model, ModelOptions } from "sequelize";
 import ModelInterface from "./interfaces";
 
 export default class AuthModel extends ModelInterface {
@@ -19,6 +19,14 @@ export default class AuthModel extends ModelInterface {
 		status: {
 			type: DataTypes.BOOLEAN,
 			defaultValue: true,
+		},
+	};
+
+	options: ModelOptions<Model<any, any>> = {
+		defaultScope: {
+			attributes: {
+				exclude: ["password"],
+			},
 		},
 	};
 }

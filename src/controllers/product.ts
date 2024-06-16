@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { make } from "simple-body-validator";
 import { Models } from "../models";
+import { validateRequestAndExtract } from "../helper/utils";
 
 export default {
 	async index(req: Request, res: Response) {
@@ -9,50 +10,39 @@ export default {
 		});
 	},
 	async store(req: Request, res: Response) {
-		const validator = make(req.body, {
+		const form = validateRequestAndExtract(req, {
 			name: "required",
 			price: "required",
 			qty: "required",
 			expired: "required|date",
 		});
 
-		if (!validator.validate()) {
-			return res
-				.json({
-					errors: validator.errors().all(),
-				})
-				.status(412);
+		if (!form.validate) {
+			return res.status(412).json({
+				errors: form.errors,
+			});
 		}
 
-		const { name, price, qty, expired } = req.body;
-		const createdData = await Models.ProductModel.query().create({
-			name,
-			price,
-			qty,
-			expired,
-		});
+		await Models.ProductModel.query().create(form.body);
 
 		res.json({
 			message: "Successfully created data",
 		});
 	},
 	async update(req: Request, res: Response) {
-		const validator = make(req.body, {
+		const form = validateRequestAndExtract(req.body, {
 			name: "required",
 			price: "required",
 			qty: "required",
 			expired: "required|date",
 		});
 
-		if (!validator.validate()) {
-			return res
-				.json({
-					errors: validator.errors().all(),
-				})
-				.status(412);
+		if (!form.validate) {
+			return res.status(412).json({
+				errors: form.errors,
+			});
 		}
 
-		const { name, price, qty, expired } = req.body;
 		const data = await Models.ProductModel.query().findOne({
 			where: {
 				id: req.params.id,
@@ -66,12 +56,7 @@ export default {
 				})
 				.status(404);
 		} else {
-			await data.update({
-				name,
-				price,
-				qty,
-				expired,
-			});
+			await data.update(form.body);
 			res.json({
 				message: "Successfully updated data",
 			});
@@ -85,11 +70,9 @@ export default {
 		});
 
 		if (!data) {
-			return res
-				.json({
-					message: "Data not exists!",
-				})
-				.status(404);
+			return res.status(404).json({
+				message: "Data not exists!",
+			});
 		} else {
 			await data.destroy();
 			res.json({

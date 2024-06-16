@@ -1,4 +1,4 @@
-import { Model, ModelAttributes } from "sequelize";
+import { Model, ModelAttributes, ModelOptions } from "sequelize";
 import Server from "../server";
 
 export default abstract class ModelInterface {
@@ -10,11 +10,20 @@ export default abstract class ModelInterface {
 	abstract tableAttributes: ModelAttributes<Model<any, any>>;
 
 	/**
+	 * Setup the model options
+	 */
+	options: ModelOptions = {};
+
+	/**
 	 * Starting the query models
 	 *
 	 * @returns
 	 */
 	query() {
-		return Server.db?.define(this.tableName, this.tableAttributes);
+		return Server.db?.define(
+			this.tableName,
+			this.tableAttributes,
+			this.options
+		);
 	}
 }
